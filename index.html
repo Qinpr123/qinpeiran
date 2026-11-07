@@ -1,0 +1,1738 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PEIRAN QIN // VISUAL PLAYGROUND</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 FontAwesome 图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- 引入粗黑几何字体与现代字体 -->
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        display: ['Syne', 'Plus Jakarta Sans', 'sans-serif'],
+                        sans: ['Space Grotesk', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        cream: '#F5F2EB',
+                        ink: '#111111',
+                        pop: {
+                            orange: '#FF491F',
+                            blue: '#1E3BFF',
+                            lime: '#D9FF00',
+                            pink: '#FF70D9',
+                            teal: '#00D09C'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #F5F2EB;
+            color: #111111;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* 新野兽派波普硬阴影与粗黑边框 */
+        .brutal-border {
+            border: 3px solid #111111;
+        }
+        .brutal-border-thick {
+            border: 4px solid #111111;
+        }
+        .brutal-shadow {
+            box-shadow: 6px 6px 0px #111111;
+            transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .brutal-shadow-lg {
+            box-shadow: 10px 10px 0px #111111;
+            transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        .brutal-btn:hover {
+            transform: translate(-3px, -3px);
+            box-shadow: 9px 9px 0px #111111;
+        }
+        .brutal-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: 2px 2px 0px #111111;
+        }
+
+        /* 跑马灯无限滚动动画 */
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            display: flex;
+            width: 200%;
+            animation: marquee 18s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+
+        /* 悬浮贴纸缓慢摇摆动画 */
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+
+        /* 盖章动画 */
+        @keyframes stampSlam {
+            0% { transform: scale(3) rotate(-25deg); opacity: 0; }
+            70% { transform: scale(0.9) rotate(-12deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-12deg); opacity: 1; }
+        }
+        .stamp-anim {
+            animation: stampSlam 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2) forwards;
+        }
+
+        /* 雷达图多边形平滑变形过渡 */
+        #radar-polygon {
+            transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .radar-vertex {
+            transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        /* 真实撕贴纸视觉与动效样式 */
+        .sticker-stage {
+            perspective: 1200px;
+        }
+        .sticker-front-layer {
+            transform-origin: top left;
+            transition: transform 0.65s cubic-bezier(0.32, 0.94, 0.4, 1),
+                        clip-path 0.65s cubic-bezier(0.32, 0.94, 0.4, 1),
+                        opacity 0.55s ease,
+                        box-shadow 0.4s ease;
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            will-change: transform, clip-path;
+        }
+        .peel-corner {
+            position: absolute;
+            top: -3px;
+            right: -3px;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(225deg, #00D09C 46%, #111111 46%, #111111 51%, #F5F2EB 51%);
+            border-bottom-left-radius: 16px;
+            box-shadow: -5px 5px 0px rgba(17, 17, 17, 0.9);
+            transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+            z-index: 30;
+            pointer-events: none;
+        }
+        .sticker-stage:hover .peel-corner {
+            width: 78px;
+            height: 78px;
+            box-shadow: -8px 8px 0px rgba(17, 17, 17, 1);
+        }
+        .sticker-stage.is-peeled .sticker-front-layer {
+            transform: translate(-35%, -85%) rotate(-24deg) skewX(14deg) scale(0.85);
+            clip-path: polygon(0 0, 15% 0, 0 15%, 0 0);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 点阵艺术装饰背景 */
+        .bg-dots {
+            background-image: radial-gradient(#111111 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F5F2EB;
+            border-left: 3px solid #111111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF491F;
+            border: 2px solid #111111;
+        }
+    </style>
+</head>
+<body class="selection:bg-pop-lime selection:text-ink">
+
+    <!-- ==========================================
+         顶部极简游戏化导航栏：4枚集章卡 (Stamp Passport)
+         ========================================== -->
+    <header class="fixed top-4 left-0 right-0 z-50 px-4 md:px-8 pointer-events-none">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <!-- 左上角：高饱和度个人名牌 -->
+            <a href="#hero" onclick="playSoundEffect('switch')" class="pointer-events-auto bg-pop-lime brutal-border brutal-shadow brutal-btn px-4 py-2 rounded-full flex items-center space-x-2">
+                <span class="w-3 h-3 rounded-full bg-ink animate-ping"></span>
+                <span class="font-display font-extrabold text-sm md:text-base tracking-tight">PEIRAN QIN™</span>
+            </a>
+
+            <!-- 右侧：游戏化「集章通关护照」 + 音效开关 -->
+            <div class="pointer-events-auto bg-white brutal-border brutal-shadow px-3 py-1.5 rounded-full flex items-center space-x-2 sm:space-x-3">
+                <span class="text-xs font-bold pl-2 hidden sm:inline">探索集章:</span>
+                
+                <!-- 4枚互动印章槽 -->
+                <div class="flex items-center space-x-1.5">
+                    <div id="stamp-1" onclick="scrollToSection('hero')" title="印章1：封面互动" class="w-8 h-8 rounded-full border-2 border-ink flex items-center justify-center cursor-pointer transition-all bg-pop-lime text-ink font-bold text-xs">
+                        <i class="fa-solid fa-bolt"></i>
+                    </div>
+                    <div id="stamp-2" onclick="scrollToSection('duality')" title="印章2：能力与经历" class="w-8 h-8 rounded-full border-2 border-dashed border-ink/40 flex items-center justify-center cursor-pointer transition-all text-ink/30 text-xs">
+                        <i class="fa-solid fa-compass"></i>
+                    </div>
+                    <div id="stamp-3" onclick="scrollToSection('works')" title="印章3：作品放映" class="w-8 h-8 rounded-full border-2 border-dashed border-ink/40 flex items-center justify-center cursor-pointer transition-all text-ink/30 text-xs">
+                        <i class="fa-solid fa-play"></i>
+                    </div>
+                    <div id="stamp-4" onclick="scrollToSection('playground')" title="印章4：兴趣贴纸" class="w-8 h-8 rounded-full border-2 border-dashed border-ink/40 flex items-center justify-center cursor-pointer transition-all text-ink/30 text-xs">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                </div>
+
+                <!-- 集齐4枚印章后解锁的彩蛋按钮 -->
+                <button id="ssr-badge-btn" onclick="openGrandPrizeModal()" class="hidden bg-pop-orange text-white brutal-border px-3 py-1 rounded-full font-display font-extrabold text-xs items-center space-x-1 animate-bounce hover:bg-pop-pink hover:text-ink transition">
+                    <i class="fa-solid fa-circle-play text-pop-lime"></i>
+                    <span>观看彩蛋视频</span>
+                </button>
+
+                <!-- 音效开关 -->
+                <button onclick="toggleAudio()" id="audio-btn" class="w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center text-xs hover:bg-pop-orange transition" title="音效开关">
+                    <i id="audio-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- ==========================================
+         00 // 巨幅画报封面 (HERO SECTION)
+         ========================================== -->
+    <section id="hero" class="relative min-h-screen pt-24 pb-12 px-4 md:px-8 flex flex-col justify-between overflow-hidden" onclick="spawnClickSticker(event)">
+        
+        <!-- 鼠标点击生成的波普涂鸦容器 -->
+        <div id="click-canvas-layer" class="absolute inset-0 pointer-events-none z-0 overflow-hidden"></div>
+
+        <div class="max-w-7xl mx-auto w-full my-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            
+            <!-- 左侧：超大号视觉冲击排版 -->
+            <div class="lg:col-span-7 space-y-6">
+                <div class="inline-flex items-center space-x-2 bg-pop-orange text-white brutal-border px-4 py-1.5 rounded-full font-bold text-xs sm:text-sm brutal-shadow -rotate-2">
+                    <span>★ 点击空白处任意涂鸦！</span>
+                </div>
+
+                <h1 class="font-display font-extrabold text-5xl sm:text-7xl xl:text-[5.2rem] leading-[0.95] tracking-tight text-ink">
+                    BUILD SYSTEMS.<br>
+                    <span class="inline-block bg-pop-blue text-white px-4 py-1 brutal-border brutal-shadow rotate-1 my-2">SHAPE</span>
+                    EXPERIENCES.
+                </h1>
+
+                <!-- 姓名 + 核心身份胶囊 -->
+                <div class="flex flex-wrap items-center gap-3 pt-1">
+                    <span class="text-2xl sm:text-3xl font-extrabold text-ink">
+                        我是 <span class="underline decoration-pop-orange decoration-4 underline-offset-4">秦沛然</span>
+                    </span>
+                    <div class="inline-flex flex-wrap items-center gap-2">
+                        <span class="bg-pop-lime text-ink font-extrabold text-sm sm:text-base px-3.5 py-1 rounded-full brutal-border brutal-shadow">
+                            上交建筑学硕士
+                        </span>
+                        <span class="font-display font-extrabold text-lg text-ink">×</span>
+                        <span class="bg-white text-ink font-extrabold text-sm sm:text-base px-3.5 py-1 rounded-full brutal-border brutal-shadow">
+                            前腾讯 AI PM <span class="text-xs font-bold text-ink/60">(实习)</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 精简有力的一句话定位 -->
+                <p class="text-lg sm:text-2xl font-bold text-ink/85 max-w-2xl leading-relaxed">
+                    着迷于用 AI 解决真实问题、创造新奇体验，在
+                    <span onclick="event.stopPropagation(); jumpToTrack('product')" class="cursor-pointer bg-pop-lime px-2.5 py-0.5 mx-0.5 brutal-border text-ink hover:-translate-y-0.5 inline-block transition">产品构建</span>、
+                    <span onclick="event.stopPropagation(); jumpToTrack('game')" class="cursor-pointer bg-pop-orange text-white px-2.5 py-0.5 mx-0.5 brutal-border hover:-translate-y-0.5 inline-block transition">游戏策划</span>与
+                    <span onclick="event.stopPropagation(); jumpToTrack('visual')" class="cursor-pointer bg-pop-pink text-ink px-2.5 py-0.5 mx-0.5 brutal-border hover:-translate-y-0.5 inline-block transition">视觉设计</span>之间自由切换。
+                </p>
+            </div>
+
+            <!-- 右侧：巨幅波普拍立得画框 -->
+            <div class="lg:col-span-5 relative flex justify-center" onclick="event.stopPropagation()">
+                
+                <div id="hero-card-bg" class="absolute inset-0 bg-pop-blue brutal-border-thick rounded-[2rem] rotate-6 translate-x-3 translate-y-3 transition-colors duration-300"></div>
+
+                <div onclick="toggleHeroPhotoMode()" class="cursor-pointer relative bg-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-4 sm:p-5 w-full max-w-md -rotate-2 hover:rotate-0 transition-transform duration-300">
+                    <div class="flex justify-between items-center mb-3 pb-2 border-b-2 border-ink">
+                        <span id="hero-mode-pill" class="font-mono font-bold text-xs bg-pop-lime px-2.5 py-0.5 brutal-border rounded-full">ON // WORK MODE</span>
+                        <span class="font-mono font-bold text-xs text-ink/60">点击切换 ↻</span>
+                    </div>
+
+                    <div class="relative aspect-[4/4] w-full rounded-2xl overflow-hidden brutal-border bg-pop-blue group">
+                        <img id="hero-main-img" 
+                             src="assets/hero/work.jpg" 
+                             onerror="this.src='https://placehold.co/800x800/1E3BFF/FFFFFF?text=WORK+MODE'"
+                             alt="Peiran Qin" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        
+                        <div class="absolute bottom-3 left-3 right-3 bg-white/95 brutal-border px-3 py-2 rounded-xl flex items-center justify-between">
+                            <span id="hero-img-caption" class="font-bold text-xs sm:text-sm truncate">👩‍💻 工作状态 // 拆解痛点，让想法跑通闭环</span>
+                            <span id="hero-img-tag" class="bg-pop-blue text-white text-[10px] font-bold px-2 py-0.5 rounded brutal-border shrink-0">BUILDER</span>
+                        </div>
+                    </div>
+
+                    <div class="absolute -top-6 -right-6 w-24 h-24 bg-pop-lime brutal-border rounded-full flex flex-col items-center justify-center text-center p-2 brutal-shadow animate-float">
+                        <span class="font-display font-extrabold text-xs leading-tight">WORK /<br>LIFE!</span>
+                        <i class="fa-solid fa-camera-rotate text-sm mt-1"></i>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- 底部动感跑马灯分割带 -->
+        <div class="mt-12 -mx-4 md:-mx-8 bg-ink text-pop-lime border-y-4 border-ink py-3 overflow-hidden relative z-10">
+            <div class="animate-marquee font-display font-extrabold text-lg sm:text-2xl tracking-wider uppercase flex items-center space-x-8">
+                <span>★ PRODUCT BUILDING</span>
+                <span>✦ GAME DESIGN</span>
+                <span>★ VISUAL ARTS</span>
+                <span>✦ TENCENT AGENT PM</span>
+                <span>★ NETEASE GAME AWARD</span>
+                <span>✦ SJTU ARCHITECTURE M.ARCH</span>
+                <span>★ PRODUCT BUILDING</span>
+                <span>✦ GAME DESIGN</span>
+                <span>★ VISUAL ARTS</span>
+                <span>✦ TENCENT AGENT PM</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ==========================================
+         01 // 能力雷达与经历时序 (CAPABILITY RADAR & TIMELINE)
+         交互：点击右侧经历节点，驱动左侧能力雷达与关键产出同步变化
+         ========================================== -->
+    <section id="duality" class="py-20 px-4 md:px-8 bg-pop-blue text-white border-b-4 border-ink transition-colors duration-500">
+        <div class="max-w-7xl mx-auto space-y-10">
+            
+            <!-- 顶部标题 -->
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="bg-pop-lime text-ink brutal-border px-3 py-1 rounded-full font-bold text-xs uppercase">
+                        01 // CAPABILITIES & TIMELINE
+                    </span>
+                    <h2 class="font-display font-extrabold text-4xl sm:text-6xl mt-3">
+                        能力雷达与经历时序
+                    </h2>
+                </div>
+                <p class="font-bold text-sm bg-white text-ink brutal-border px-4 py-2 rounded-xl brutal-shadow self-start md:self-end">
+                    💡 点击右侧经历节点，查看对应阶段的能力侧重
+                </p>
+            </div>
+
+            <!-- 主体双栏：左雷达面板 (5列) + 右经历时序 (7列) -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                
+                <!-- 左侧：六维能力雷达图 -->
+                <div class="lg:col-span-5 bg-white text-ink brutal-border-thick brutal-shadow-lg rounded-[2rem] p-6 flex flex-col justify-between relative overflow-hidden">
+                    
+                    <!-- 当前阶段抬头 -->
+                    <div class="flex items-center justify-between border-b-4 border-ink pb-4">
+                        <div>
+                            <span id="radar-role-badge" class="bg-pop-orange text-white font-mono font-extrabold text-xs px-2.5 py-0.5 rounded brutal-border">
+                                2026 // TENCENT
+                            </span>
+                            <h3 id="radar-role-title" class="font-display font-extrabold text-2xl mt-1">腾讯文档 · AI 产品经理</h3>
+                        </div>
+                        <button onclick="resetRadarToFull()" class="bg-pop-lime hover:bg-pop-orange hover:text-white brutal-border px-3 py-1.5 rounded-xl font-extrabold text-xs transition" title="查看综合能力">
+                            综合视图 ↺
+                        </button>
+                    </div>
+
+                    <!-- 动态 SVG 六边形雷达图 -->
+                    <div class="relative my-4 flex items-center justify-center">
+                        <svg viewBox="0 0 320 290" class="w-full max-w-[330px] h-auto overflow-visible select-none">
+                            <!-- 3层网格底盘 -->
+                            <polygon points="160,35 255,90 255,200 160,255 65,200 65,90" fill="#F5F2EB" stroke="#111111" stroke-width="3"/>
+                            <polygon points="160,72 224,108 224,182 160,218 96,182 96,108" fill="none" stroke="#111111" stroke-width="1.5" stroke-dasharray="4 4"/>
+                            <polygon points="160,108 192,127 192,163 160,182 128,163 128,127" fill="none" stroke="#111111" stroke-width="1.5" stroke-dasharray="4 4"/>
+                            
+                            <!-- 6条轴线 -->
+                            <line x1="160" y1="145" x2="160" y2="35" stroke="#111111" stroke-width="1.5"/>
+                            <line x1="160" y1="145" x2="255" y2="90" stroke="#111111" stroke-width="1.5"/>
+                            <line x1="160" y1="145" x2="255" y2="200" stroke="#111111" stroke-width="1.5"/>
+                            <line x1="160" y1="145" x2="160" y2="255" stroke="#111111" stroke-width="1.5"/>
+                            <line x1="160" y1="145" x2="65" y2="200" stroke="#111111" stroke-width="1.5"/>
+                            <line x1="160" y1="145" x2="65" y2="90" stroke="#111111" stroke-width="1.5"/>
+
+                            <!-- 动态能力数据多边形 -->
+                            <polygon id="radar-polygon" 
+                                     points="160,40 250,93 242,193 160,244 74,195 70,93" 
+                                     fill="rgba(255, 73, 31, 0.72)" 
+                                     stroke="#111111" 
+                                     stroke-width="3.5" />
+
+                            <!-- 6个顶点圆点 -->
+                            <circle id="radar-dot-0" class="radar-vertex" cx="160" cy="40" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+                            <circle id="radar-dot-1" class="radar-vertex" cx="250" cy="93" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+                            <circle id="radar-dot-2" class="radar-vertex" cx="242" cy="193" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+                            <circle id="radar-dot-3" class="radar-vertex" cx="160" cy="244" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+                            <circle id="radar-dot-4" class="radar-vertex" cx="74" cy="195" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+                            <circle id="radar-dot-5" class="radar-vertex" cx="70" cy="93" r="6" fill="#D9FF00" stroke="#111111" stroke-width="2.5"/>
+
+                            <!-- 6个维度标签 -->
+                            <text x="160" y="18" text-anchor="middle" class="font-sans font-extrabold text-[12px] fill-ink">AI Agent</text>
+                            <text x="266" y="86" text-anchor="start" class="font-sans font-extrabold text-[12px] fill-ink">产品架构</text>
+                            <text x="266" y="210" text-anchor="start" class="font-sans font-extrabold text-[12px] fill-ink">游戏策划</text>
+                            <text x="160" y="278" text-anchor="middle" class="font-sans font-extrabold text-[12px] fill-ink">数据分析</text>
+                            <text x="54" y="210" text-anchor="end" class="font-sans font-extrabold text-[12px] fill-ink">视觉设计</text>
+                            <text x="54" y="86" text-anchor="end" class="font-sans font-extrabold text-[12px] fill-ink">空间思维</text>
+                        </svg>
+                    </div>
+
+                    <!-- 底部当前阶段重点说明栏 -->
+                    <div class="bg-cream brutal-border rounded-2xl p-3.5 flex items-center space-x-3">
+                        <span class="w-8 h-8 rounded-xl bg-pop-lime brutal-border flex items-center justify-center font-extrabold text-sm shrink-0">✦</span>
+                        <div id="radar-buff-text" class="font-bold text-xs sm:text-sm text-ink leading-snug">
+                            面向多人多 Agent 协作设计 AI 原生文档交互机制，参与 Doc Benchmark 评测体系与 AI 数据看板建设。
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 右侧：经历时序 (TIMELINE) -->
+                <div class="lg:col-span-7 flex flex-col justify-between">
+                    
+                    <div class="relative pl-6 sm:pl-8 space-y-4 my-auto before:content-[''] before:absolute before:left-2.5 sm:before:left-3.5 before:top-4 before:bottom-4 before:w-1.5 before:bg-ink">
+                        
+                        <!-- 节点 01: 腾讯文档 Doc Agent -->
+                        <div onclick="selectTimelineQuest(0)" id="quest-card-0" class="quest-card cursor-pointer relative bg-pop-lime text-ink brutal-border-thick brutal-shadow-lg rounded-2xl p-5 transition-all -translate-y-0.5">
+                            <span class="quest-dot absolute -left-[26px] sm:-left-[30px] top-6 w-5 h-5 rounded-full bg-pop-orange brutal-border"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-display font-extrabold text-lg sm:text-xl">腾讯文档 × WorkBuddy · Doc Agent 产品经理实习</h4>
+                                <span class="font-mono font-extrabold text-xs bg-ink text-pop-lime px-2.5 py-0.5 rounded-full">2026.04 — 2026.09</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="text-xs font-bold bg-white/90 brutal-border px-2.5 py-1 rounded-lg">AI 原生文档编辑器</span>
+                                <span class="text-xs font-bold bg-white/90 brutal-border px-2.5 py-1 rounded-lg">Doc Benchmark 评测体系</span>
+                                <span class="text-xs font-bold bg-white/90 brutal-border px-2.5 py-1 rounded-lg">AI 工作台需求落地</span>
+                                <span class="text-xs font-bold bg-pop-pink brutal-border px-2.5 py-1 rounded-lg">28th 司庆全员款文化衫（个人设计）</span>
+                            </div>
+                        </div>
+
+                        <!-- 节点 02: 浩海星空机器人 -->
+                        <div onclick="selectTimelineQuest(1)" id="quest-card-1" class="quest-card cursor-pointer relative bg-white text-ink hover:bg-cream brutal-border-thick brutal-shadow rounded-2xl p-5 transition-all">
+                            <span class="quest-dot absolute -left-[26px] sm:-left-[30px] top-6 w-5 h-5 rounded-full bg-white brutal-border"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-display font-extrabold text-lg sm:text-xl">浩海星空机器人 · 产品经理实习</h4>
+                                <span class="font-mono font-extrabold text-xs bg-ink text-white px-2.5 py-0.5 rounded-full">2025.09 — 2026.03</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">C 端 AI 陪伴机器人（2-8 岁场景）</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">具身智能数据采集平台 0→1</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">资讯推送系统 · 累计 4000+ 条</span>
+                            </div>
+                        </div>
+
+                        <!-- 节点 03: 独立游戏与 AI 应用比赛 -->
+                        <div onclick="selectTimelineQuest(2)" id="quest-card-2" class="quest-card cursor-pointer relative bg-white text-ink hover:bg-cream brutal-border-thick brutal-shadow rounded-2xl p-5 transition-all">
+                            <span class="quest-dot absolute -left-[26px] sm:-left-[30px] top-6 w-5 h-5 rounded-full bg-white brutal-border"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-display font-extrabold text-lg sm:text-xl">独立游戏与 AI 应用 · 赛事获奖</h4>
+                                <span class="font-mono font-extrabold text-xs bg-ink text-white px-2.5 py-0.5 rounded-full">2025 — 2026</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">网易雷火高校游戏大赛二等奖《钢丝行者》</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">美团 NoCode 挑战赛决赛入围《时光织语》</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">腾讯游戏星跃实战营优秀学员《字灵》</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">腾讯产品经理营优秀学员《立意教练》</span>
+                            </div>
+                        </div>
+
+                        <!-- 节点 04: 上海交通大学建筑学 -->
+                        <div onclick="selectTimelineQuest(3)" id="quest-card-3" class="quest-card cursor-pointer relative bg-white text-ink hover:bg-cream brutal-border-thick brutal-shadow rounded-2xl p-5 transition-all">
+                            <span class="quest-dot absolute -left-[26px] sm:-left-[30px] top-6 w-5 h-5 rounded-full bg-white brutal-border"></span>
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <h4 class="font-display font-extrabold text-lg sm:text-xl">上海交通大学 · 建筑学硕士（在读）</h4>
+                                <span class="font-mono font-extrabold text-xs bg-ink text-white px-2.5 py-0.5 rounded-full">2024.09 — 2027.03</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2 mt-3">
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">GPA 3.9/4 · 专业前 10%</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">空间叙事与需求转译训练</span>
+                                <span class="text-xs font-bold bg-cream brutal-border px-2.5 py-1 rounded-lg">宁波慈城《年糕家族》IP（政府采纳）</span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==========================================
+         02 // 卡带作品放映机 (SELECTED WORKS)
+         「产品构建 · 游戏策划 · 视觉设计」
+         ========================================== -->
+    <section id="works" class="py-24 px-4 md:px-8 bg-cream bg-dots border-b-4 border-ink">
+        <div class="max-w-7xl mx-auto space-y-8">
+            
+            <!-- 顶部标题 + 方向切换 Tab -->
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+                <div>
+                    <span class="bg-pop-pink text-ink brutal-border px-3 py-1 rounded-full font-bold text-xs uppercase">
+                        02 // SELECTED WORKS
+                    </span>
+                    <h2 class="font-display font-extrabold text-4xl sm:text-6xl mt-3 text-ink">
+                        代表作品放映
+                    </h2>
+                </div>
+
+                <!-- 三个方向切换 Tab + 全部作品集飞书入口 -->
+                <div class="flex flex-wrap items-center gap-3 self-start lg:self-end">
+                    <div class="bg-white p-2 rounded-2xl brutal-border-thick brutal-shadow inline-flex flex-wrap gap-2">
+                        <button onclick="switchWorkTrack('product')" id="track-tab-product" class="px-5 py-2.5 rounded-xl font-display font-extrabold text-sm sm:text-base transition-all bg-pop-lime text-ink brutal-border flex items-center gap-2">
+                            <i class="fa-solid fa-cubes"></i>
+                            <span>产品构建</span>
+                        </button>
+                        <button onclick="switchWorkTrack('game')" id="track-tab-game" class="px-5 py-2.5 rounded-xl font-display font-extrabold text-sm sm:text-base transition-all bg-white text-ink hover:bg-cream flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad"></i>
+                            <span>游戏策划</span>
+                        </button>
+                        <button onclick="switchWorkTrack('visual')" id="track-tab-visual" class="px-5 py-2.5 rounded-xl font-display font-extrabold text-sm sm:text-base transition-all bg-white text-ink hover:bg-cream flex items-center gap-2">
+                            <i class="fa-solid fa-palette"></i>
+                            <span>视觉设计</span>
+                        </button>
+                    </div>
+
+                    <!-- 飞书完整作品集入口 -->
+                    <a href="https://my.feishu.cn/docx/PtTKdf6aVo6xdWxpLrgckme8njJ" target="_blank" rel="noopener noreferrer" onclick="playSoundEffect('switch')" class="bg-ink text-pop-lime hover:bg-pop-orange hover:text-white brutal-border-thick brutal-shadow brutal-btn px-5 py-4 rounded-2xl font-display font-extrabold text-sm sm:text-base flex items-center gap-2 transition">
+                        <span>浏览全部作品</span>
+                        <i class="fa-solid fa-arrow-up-right-from-square text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 放映机主体：左侧当前方向3部卡带 + 右侧巨幕对比放映屏 -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                
+                <!-- 左侧：当前方向的 3 张作品卡带选择器 -->
+                <div id="cartridge-list" class="lg:col-span-4 flex flex-col justify-between space-y-4">
+                    <!-- 由 JS 动态渲染 -->
+                </div>
+
+                <!-- 右侧：作品放映屏 -->
+                <div class="lg:col-span-8 bg-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-4 sm:p-6 flex flex-col justify-between">
+                    
+                    <!-- 放映机顶栏 -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 pb-4 border-b-4 border-ink">
+                        <div class="flex items-center space-x-2">
+                            <span id="screen-track-badge" class="bg-pop-lime text-ink font-mono font-extrabold text-xs px-3 py-1 rounded-full brutal-border">
+                                产品构建
+                            </span>
+                            <span id="screen-title" class="font-display font-extrabold text-base sm:text-xl">
+                                《拾帧》生活碎片智能排版
+                            </span>
+                        </div>
+                        <span id="screen-mode-hint" class="text-xs font-bold bg-cream px-3 py-1 rounded-full brutal-border">
+                            ⇄ 拖动滑块看设计思路
+                        </span>
+                    </div>
+
+                    <!-- 作品影像（有视频素材时替代对比器） -->
+                    <div id="video-wrap" class="hidden relative w-full aspect-[16/10] my-4 rounded-2xl overflow-hidden brutal-border bg-ink">
+                        <video id="screen-video" controls muted loop playsinline preload="metadata" class="w-full h-full object-contain"></video>
+                        <div id="video-empty" class="hidden absolute inset-0 flex flex-col items-center justify-center text-white/60 font-bold text-sm gap-2">
+                            <i class="fa-solid fa-film text-3xl"></i>
+                            <span>影像素材待补充</span>
+                        </div>
+                    </div>
+
+                    <!-- 图片对比器 (Before / After Slider) -->
+                    <div id="compare-wrap" class="relative w-full aspect-[16/10] my-4 rounded-2xl overflow-hidden brutal-border select-none bg-ink">
+                        <!-- 底层：最终视觉成品大图 -->
+                        <img id="project-img-final" 
+                             src="assets/works/shizhen-final.jpg" 
+                             alt="Final Visual" 
+                             class="absolute inset-0 w-full h-full object-cover">
+                        
+                        <span class="absolute top-4 right-4 bg-pop-lime text-ink font-bold text-xs px-3 py-1 rounded-full brutal-border z-10 pointer-events-none">
+                            最终呈现
+                        </span>
+
+                        <!-- 顶层：幕后思考层 -->
+                        <div id="slider-overlay" class="absolute inset-0 bg-pop-blue flex items-center justify-center overflow-hidden" style="clip-path: inset(0 50% 0 0);">
+                            <img id="project-img-wireframe" 
+                                 src="assets/works/shizhen-behind.jpg" 
+                                 alt="Behind the scenes" 
+                                 class="absolute inset-0 w-full h-full object-cover mix-blend-luminosity opacity-35">
+                            <div class="relative z-10 p-5 sm:p-8 max-w-md bg-white text-ink brutal-border brutal-shadow rounded-2xl m-4">
+                                <span id="project-behind-tag" class="bg-pop-orange text-white text-xs font-bold px-2.5 py-1 rounded brutal-border">
+                                    设计思路
+                                </span>
+                                <h4 id="project-behind-title" class="font-display font-extrabold text-lg sm:text-xl mt-2.5">
+                                    零负担碎片输入 + AI 手账流式编排
+                                </h4>
+                                <p id="project-behind-desc" class="text-xs sm:text-sm font-bold text-ink/80 mt-1.5 leading-relaxed">
+                                    面向渴望留存日常、却困于社交绩效压力与整理成本的都市记录者，让随手记下的图文不再沦为数字坟场。
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- 拖拽 / 单击交互层 -->
+                        <div id="compare-hit" class="absolute inset-0 z-30 cursor-ew-resize touch-none"></div>
+                        
+                        <!-- 视觉分割线手柄 -->
+                        <div id="slider-line" class="absolute top-0 bottom-0 w-1.5 bg-ink z-20 pointer-events-none" style="left: 50%;">
+                            <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-11 h-11 rounded-full bg-pop-lime brutal-border-thick flex items-center justify-center text-ink shadow-lg">
+                                <i class="fa-solid fa-arrows-left-right text-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部精简成果栏 -->
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+                        <div class="flex items-center gap-2.5">
+                            <span id="screen-metric" class="shrink-0 bg-pop-orange text-white font-mono font-extrabold text-xs px-3 py-1.5 rounded-xl brutal-border">
+                                2026.11 · 完善中
+                            </span>
+                            <p id="screen-summary" class="font-bold text-sm sm:text-base text-ink">
+                                V1.0《时光织语》入围美团 NoCode 挑战赛决赛，AI 自动生成手账版式。
+                            </p>
+                        </div>
+                        <a id="screen-link-btn" href="https://framenote-sz.netlify.app/" target="_blank" rel="noopener noreferrer" onclick="playSoundEffect('switch')" class="shrink-0 bg-ink text-pop-lime hover:bg-pop-orange hover:text-white brutal-border px-4 py-2 rounded-xl font-extrabold text-xs sm:text-sm transition flex items-center gap-1.5">
+                            <span id="screen-link-text">体验作品</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==========================================
+         03 // 潮流贴纸白板 (THE STICKER BOARD: B面兴趣)
+         ========================================== -->
+    <section id="playground" class="py-24 px-4 md:px-8 bg-pop-teal border-b-4 border-ink overflow-hidden">
+        <div class="max-w-7xl mx-auto space-y-8">
+            
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                <div>
+                    <span class="bg-white text-ink brutal-border px-3 py-1 rounded-full font-bold text-xs uppercase">03 // PERSONALITY & INTERESTS</span>
+                    <h2 class="font-display font-extrabold text-4xl sm:text-6xl mt-3 text-ink">
+                        撕开贴纸，看看工作之外的我
+                    </h2>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button onclick="resetAllStickers()" class="bg-white text-ink brutal-border brutal-shadow brutal-btn px-5 py-3 rounded-2xl font-display font-extrabold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        <span>全部贴回</span>
+                    </button>
+                    <button onclick="shuffleStickers()" class="bg-pop-lime text-ink brutal-border brutal-shadow brutal-btn px-5 py-3 rounded-2xl font-display font-extrabold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-shuffle"></i>
+                        <span>随机摇一摇</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 4张可撕贴纸画板 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 pt-6">
+                
+                <!-- 贴纸 1：攀岩与户外 -->
+                <div onclick="peelSticker(this)" class="sticker-stage relative h-[360px] cursor-pointer rotate-1 transition-transform duration-300">
+                    <div class="inset-0 absolute bg-ink text-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-pop-lime text-ink font-mono font-extrabold text-xs px-3 py-1 rounded-full">B-SIDE // 01</span>
+                            <span class="text-xs text-white/60 font-bold">点击贴回 ↺</span>
+                        </div>
+                        <div class="my-auto space-y-2">
+                            <div class="w-12 h-12 rounded-2xl bg-pop-orange brutal-border flex items-center justify-center text-white text-2xl">
+                                <i class="fa-solid fa-mountain"></i>
+                            </div>
+                            <h4 class="font-display font-extrabold text-2xl text-pop-lime">户外与运动爱好者</h4>
+                            <p class="text-sm font-bold text-white/90 leading-relaxed">
+                                喜欢攀岩、徒步、龙舟与网球，还为校攀岩队设计过队服。
+                            </p>
+                        </div>
+                        <div class="text-xs font-mono text-pop-teal font-bold border-t border-white/20 pt-3">
+                            日常充电方式：山野与岩壁
+                        </div>
+                    </div>
+
+                    <div class="sticker-front-layer absolute inset-0 bg-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-5 flex flex-col justify-between overflow-hidden">
+                        <div class="peel-corner"></div>
+                        <div class="aspect-square rounded-2xl overflow-hidden brutal-border bg-pop-orange relative">
+                            <img src="https://images.unsplash.com/photo-1522163182402-834f871fd851?auto=format&fit=crop&w=600&q=80" alt="Climbing" class="w-full h-full object-cover">
+                            <span class="absolute bottom-3 left-3 bg-pop-lime text-ink font-extrabold text-xs px-3 py-1 rounded-full brutal-border">
+                                ↗ 点击撕开
+                            </span>
+                        </div>
+                        <div class="pt-3">
+                            <h3 class="font-display font-extrabold text-xl text-ink">🧗 攀岩与山野户外</h3>
+                            <p class="text-xs font-bold text-ink/60">点击撕开贴纸</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 贴纸 2：架子鼓与律动 -->
+                <div onclick="peelSticker(this)" class="sticker-stage relative h-[360px] cursor-pointer -rotate-2 transition-transform duration-300">
+                    <div class="inset-0 absolute bg-pop-blue text-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-pop-lime text-ink font-mono font-extrabold text-xs px-3 py-1 rounded-full">B-SIDE // 02</span>
+                            <span class="text-xs text-white/70 font-bold">点击贴回 ↺</span>
+                        </div>
+                        <div class="my-auto space-y-2">
+                            <div class="w-12 h-12 rounded-2xl bg-pop-lime text-ink brutal-border flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-drum"></i>
+                            </div>
+                            <h4 class="font-display font-extrabold text-2xl text-pop-lime">乐器与舞台律动</h4>
+                            <p class="text-sm font-bold text-white/95 leading-relaxed">
+                                业余架子鼓手，参与过合唱与舞蹈比赛，喜欢有节奏感的事物。
+                            </p>
+                        </div>
+                        <div class="text-xs font-mono text-pop-lime font-bold border-t border-white/20 pt-3">
+                            日常充电方式：鼓点与音乐
+                        </div>
+                    </div>
+
+                    <div class="sticker-front-layer absolute inset-0 bg-pop-lime brutal-border-thick brutal-shadow-lg rounded-[2rem] p-5 flex flex-col justify-between overflow-hidden">
+                        <div class="peel-corner"></div>
+                        <div class="aspect-square rounded-2xl overflow-hidden brutal-border bg-pop-blue relative">
+                            <img src="https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?auto=format&fit=crop&w=600&q=80" alt="Drum" class="w-full h-full object-cover">
+                            <span class="absolute bottom-3 left-3 bg-white text-ink font-extrabold text-xs px-3 py-1 rounded-full brutal-border">
+                                ↗ 点击撕开
+                            </span>
+                        </div>
+                        <div class="pt-3">
+                            <h3 class="font-display font-extrabold text-xl text-ink">🥁 架子鼓与律动</h3>
+                            <p class="text-xs font-bold text-ink/70">点击撕开贴纸</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 贴纸 3：建筑与生活 -->
+                <div onclick="peelSticker(this)" class="sticker-stage relative h-[360px] cursor-pointer rotate-2 transition-transform duration-300">
+                    <div class="inset-0 absolute bg-pop-orange text-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-ink text-pop-lime font-mono font-extrabold text-xs px-3 py-1 rounded-full">B-SIDE // 03</span>
+                            <span class="text-xs text-white/80 font-bold">点击贴回 ↺</span>
+                        </div>
+                        <div class="my-auto space-y-2">
+                            <div class="w-12 h-12 rounded-2xl bg-white text-ink brutal-border flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-compass-drafting"></i>
+                            </div>
+                            <h4 class="font-display font-extrabold text-2xl text-white">建筑视角与烟火气</h4>
+                            <p class="text-sm font-bold text-white/95 leading-relaxed">
+                                来自成都，习惯用建筑学的空间视角观察城市街角与日常生活。
+                            </p>
+                        </div>
+                        <div class="text-xs font-mono text-pop-lime font-bold border-t border-white/20 pt-3">
+                            日常充电方式：城市漫步
+                        </div>
+                    </div>
+
+                    <div class="sticker-front-layer absolute inset-0 bg-pop-pink brutal-border-thick brutal-shadow-lg rounded-[2rem] p-5 flex flex-col justify-between overflow-hidden">
+                        <div class="peel-corner"></div>
+                        <div class="aspect-square rounded-2xl overflow-hidden brutal-border bg-ink relative">
+                            <img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=600&q=80" alt="Architecture" class="w-full h-full object-cover">
+                            <span class="absolute bottom-3 left-3 bg-pop-lime text-ink font-extrabold text-xs px-3 py-1 rounded-full brutal-border">
+                                ↗ 点击撕开
+                            </span>
+                        </div>
+                        <div class="pt-3">
+                            <h3 class="font-display font-extrabold text-xl text-ink">🏛️ 建筑视角与生活</h3>
+                            <p class="text-xs font-bold text-ink/70">点击撕开贴纸</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 贴纸 4：独立造物 -->
+                <div onclick="peelSticker(this)" class="sticker-stage relative h-[360px] cursor-pointer -rotate-1 transition-transform duration-300">
+                    <div class="inset-0 absolute bg-pop-lime text-ink brutal-border-thick brutal-shadow-lg rounded-[2rem] p-6 flex flex-col justify-between">
+                        <div class="flex justify-between items-center">
+                            <span class="bg-ink text-white font-mono font-extrabold text-xs px-3 py-1 rounded-full">B-SIDE // 04</span>
+                            <span class="text-xs text-ink/70 font-bold">点击贴回 ↺</span>
+                        </div>
+                        <div class="my-auto space-y-2">
+                            <div class="w-12 h-12 rounded-2xl bg-pop-pink text-ink brutal-border flex items-center justify-center text-2xl">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <h4 class="font-display font-extrabold text-2xl text-ink">动手实现派</h4>
+                            <p class="text-sm font-bold text-ink/85 leading-relaxed">
+                                遇到好玩的新工具或脑洞，喜欢利用周末直接搓出可运行的 Demo。
+                            </p>
+                        </div>
+                        <div class="text-xs font-mono text-ink font-extrabold border-t border-ink/20 pt-3">
+                            日常充电方式：Hackathon 造物
+                        </div>
+                    </div>
+
+                    <div class="sticker-front-layer absolute inset-0 bg-pop-orange text-white brutal-border-thick brutal-shadow-lg rounded-[2rem] p-5 flex flex-col justify-between overflow-hidden">
+                        <div class="peel-corner"></div>
+                        <div class="aspect-square rounded-2xl overflow-hidden brutal-border bg-white relative">
+                            <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" alt="Maker" class="w-full h-full object-cover">
+                            <span class="absolute bottom-3 left-3 bg-ink text-white font-extrabold text-xs px-3 py-1 rounded-full brutal-border">
+                                ↗ 点击撕开
+                            </span>
+                        </div>
+                        <div class="pt-3">
+                            <h3 class="font-display font-extrabold text-xl">⚡ 周末创客实践</h3>
+                            <p class="text-xs font-bold text-white/85">点击撕开贴纸</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ==========================================
+         04 // 盖章录用入场券 (THE OFFER STAMP)
+         ========================================== -->
+    <section id="contact" class="py-24 px-4 md:px-8 bg-pop-lime">
+        <div class="max-w-5xl mx-auto">
+            
+            <div class="relative bg-white brutal-border-thick brutal-shadow-lg rounded-[2.5rem] p-8 sm:p-14 overflow-hidden">
+                
+                <div id="hired-stamp-mark" class="hidden absolute top-8 right-8 sm:top-12 sm:right-14 pointer-events-none z-20 border-8 border-pop-orange text-pop-orange px-6 py-2 rounded-2xl font-display font-extrabold text-3xl sm:text-5xl uppercase tracking-widest">
+                    HIRED ★
+                </div>
+
+                <div class="space-y-6 relative z-10">
+                    <div class="inline-block bg-ink text-pop-lime font-mono font-bold text-xs px-4 py-1.5 rounded-full">
+                        FINAL STAGE // GOLDEN TICKET
+                    </div>
+
+                    <h2 class="font-display font-extrabold text-4xl sm:text-7xl tracking-tight leading-none text-ink">
+                        觉得对味？<br>
+                        现在就盖章召唤我！
+                    </h2>
+
+                    <p class="text-base sm:text-xl font-bold text-ink/70 max-w-xl">
+                        点击下方大橙色印章按钮，在页面盖下「录用通行证」并一键复制秦沛然的联系邮箱。
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-4 pt-2">
+                        <button onclick="slamOfferStamp('1195188099@qq.com')" class="bg-pop-orange text-white brutal-border-thick brutal-shadow-lg brutal-btn px-8 py-5 rounded-2xl font-display font-extrabold text-lg sm:text-2xl flex items-center space-x-3">
+                            <i class="fa-solid fa-stamp"></i>
+                            <span id="stamp-btn-text">啪！盖章并复制邮箱</span>
+                        </button>
+
+                        <!-- 可将 href 替换为真实 PDF 简历路径 -->
+                        <a href="assets/docs/qinpeiran-portfolio-ai-pm.pdf" download="秦沛然-作品集-产品经理.pdf" onclick="playSoundEffect('switch'); showPopToast('★ 正在下载 PDF 简历')" class="bg-cream text-ink brutal-border-thick brutal-shadow brutal-btn px-6 py-5 rounded-2xl font-display font-extrabold text-base sm:text-lg flex items-center gap-2">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>下载简历 PDF ↗</span>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 浮动波普提示气泡 -->
+    <div id="pop-toast" class="fixed bottom-6 right-6 z-50 hidden bg-ink text-pop-lime brutal-border-thick brutal-shadow px-6 py-4 rounded-2xl font-bold text-sm sm:text-base items-center space-x-3">
+        <i class="fa-solid fa-star text-pop-orange text-xl animate-spin"></i>
+        <span id="pop-toast-text">已集齐一枚新印章！</span>
+        <button id="pop-toast-action" onclick="openGrandPrizeModal()" class="hidden ml-2 bg-pop-orange text-white brutal-border px-3 py-1 rounded-xl text-xs font-extrabold hover:bg-pop-pink hover:text-ink transition">
+            点击播放 ▶
+        </button>
+    </div>
+
+    <!-- 集齐4枚印章彩蛋：视频弹窗 -->
+    <canvas id="confetti-canvas" class="fixed inset-0 pointer-events-none z-[60] w-full h-full hidden"></canvas>
+
+    <div id="grand-prize-modal" class="fixed inset-0 z-[70] hidden items-center justify-center p-4 bg-ink/80 backdrop-blur-sm" onclick="closeGrandPrizeModal()">
+        <div class="relative bg-pop-lime brutal-border-thick brutal-shadow-lg rounded-[2rem] max-w-2xl w-full p-5 sm:p-7 text-ink transform transition-all" onclick="event.stopPropagation()">
+            
+            <button onclick="closeGrandPrizeModal()" class="absolute -top-4 -right-4 w-11 h-11 rounded-full bg-pop-orange text-white brutal-border-thick brutal-shadow flex items-center justify-center text-lg font-extrabold hover:scale-110 transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <span class="bg-ink text-pop-lime px-3.5 py-1 rounded-full font-mono font-extrabold text-xs">
+                    BONUS VIDEO // 1 & 0
+                </span>
+                <h3 class="font-display font-extrabold text-lg sm:text-2xl">
+                    IDEA 在前，TOKEN 才有价值
+                </h3>
+            </div>
+
+            <p class="font-bold text-xs sm:text-sm text-ink/75 leading-relaxed mb-4">
+                以「按下 Enter」为线索：盲目敲击时，大量 Token 只化为没有价值的「0」；停下来思考，创意成为 IDEA 里的「1」，一串「0」才获得意义。从盲目敲击到停顿思考、再到创造价值——先想清楚要什么，再让 AI 生成。
+            </p>
+
+            <div class="relative aspect-video w-full rounded-2xl overflow-hidden brutal-border-thick bg-ink">
+                <video id="manifesto-video" controls playsinline preload="metadata" class="w-full h-full object-contain">
+                    <source src="assets/video/ruixue-aigc.mp4" type="video/mp4">
+                    你的浏览器不支持视频播放。
+                </video>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片放大查看 -->
+    <div id="lightbox" class="hidden fixed inset-0 z-[120] bg-ink/90 backdrop-blur-sm p-4 sm:p-8 flex items-center justify-center" onclick="closeLightbox()">
+        <button onclick="closeLightbox()" class="absolute top-5 right-5 w-11 h-11 rounded-full bg-pop-lime text-ink brutal-border-thick flex items-center justify-center text-lg" title="关闭">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="lightbox-img" src="" alt="" class="max-w-full max-h-full object-contain rounded-xl brutal-border-thick bg-white">
+    </div>
+
+    <!-- 交互逻辑脚本 -->
+    <script>
+        let soundOn = true;
+        let currentVibe = 0;
+        let grandPrizeTriggered = false;
+        const collectedStamps = new Set([1]);
+
+        /* ==========================================
+           多轨道物理拟真音效引擎 (Web Audio Synthesizer)
+           ========================================== */
+        let audioCtx = null;
+        function getAudioCtx() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        function playSoundEffect(type = 'bubble') {
+            if (!soundOn) return;
+            try {
+                const ctx = getAudioCtx();
+                const now = ctx.currentTime;
+
+                if (type === 'bubble') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    const baseFreq = 260 + Math.random() * 120;
+                    osc.frequency.setValueAtTime(baseFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(baseFreq * 2.6, now + 0.065);
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(0.18, now + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.075);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'switch') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(160, now);
+                    osc.frequency.exponentialRampToValueAtTime(45, now + 0.035);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.045);
+
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(950, now + 0.025);
+                    osc2.frequency.exponentialRampToValueAtTime(420, now + 0.055);
+                    gain2.gain.setValueAtTime(0.1, now + 0.025);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start(now + 0.025);
+                    osc2.stop(now + 0.065);
+                } else if (type === 'peel') {
+                    const duration = 0.26;
+                    const bufferSize = Math.floor(ctx.sampleRate * duration);
+                    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                    const output = noiseBuffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        output[i] = (Math.random() * 2 - 1);
+                    }
+                    const whiteNoise = ctx.createBufferSource();
+                    whiteNoise.buffer = noiseBuffer;
+                    const filter = ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.Q.setValueAtTime(3.2, now);
+                    filter.frequency.setValueAtTime(700, now);
+                    filter.frequency.exponentialRampToValueAtTime(3400, now + duration);
+                    const gain = ctx.createGain();
+                    gain.gain.setValueAtTime(0.01, now);
+                    gain.gain.linearRampToValueAtTime(0.26, now + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.005, now + duration);
+                    whiteNoise.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(ctx.destination);
+                    whiteNoise.start(now);
+                    whiteNoise.stop(now + duration);
+                } else if (type === 'chime') {
+                    const notes = [523.25, 783.99];
+                    notes.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        const start = now + idx * 0.075;
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, start);
+                        gain.gain.setValueAtTime(0.001, start);
+                        gain.gain.linearRampToValueAtTime(0.16, start + 0.012);
+                        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.35);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(start);
+                        osc.stop(start + 0.36);
+                    });
+                } else if (type === 'stamp') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(135, now);
+                    osc.frequency.exponentialRampToValueAtTime(32, now + 0.22);
+                    gain.gain.setValueAtTime(0.45, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                    setTimeout(() => playSoundEffect('chime'), 120);
+                } else if (type === 'fanfare') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        const start = now + idx * 0.09;
+                        const dur = idx === 3 ? 0.55 : 0.25;
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, start);
+                        gain.gain.setValueAtTime(0.001, start);
+                        gain.gain.linearRampToValueAtTime(0.22, start + 0.015);
+                        gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(start);
+                        osc.stop(start + dur + 0.02);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        function toggleAudio() {
+            soundOn = !soundOn;
+            document.getElementById('audio-icon').className = soundOn ? 'fa-solid fa-volume-high' : 'fa-solid fa-volume-xmark';
+            if (soundOn) playSoundEffect('bubble');
+        }
+
+        function scrollToSection(id) {
+            playSoundEffect('switch');
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function jumpToTrack(trackKey) {
+            scrollToSection('works');
+            setTimeout(() => switchWorkTrack(trackKey), 300);
+        }
+
+        // 解锁顶部集章槽
+        // 解锁顶部集章槽（集齐4枚时不强行打断当前浏览，仅通过顶栏按钮与右下角气泡温和提示）
+        function unlockStamp(num, msg) {
+            if (!collectedStamps.has(num)) {
+                collectedStamps.add(num);
+                const el = document.getElementById(`stamp-${num}`);
+                const colors = ['bg-pop-lime', 'bg-pop-orange text-white', 'bg-pop-pink text-ink', 'bg-pop-teal text-ink'];
+                el.className = `w-8 h-8 rounded-full border-2 border-ink flex items-center justify-center cursor-pointer transition-all font-bold text-xs scale-110 ${colors[num - 1]}`;
+
+                if (collectedStamps.size === 4 && !grandPrizeTriggered) {
+                    grandPrizeTriggered = true;
+                    playSoundEffect('fanfare');
+                    const ssrBtn = document.getElementById('ssr-badge-btn');
+                    ssrBtn.classList.remove('hidden');
+                    ssrBtn.classList.add('inline-flex');
+                    showPopToast('🎬 4/4 集章完成！已解锁彩蛋视频', true);
+                } else {
+                    playSoundEffect('chime');
+                    showPopToast(`🎉 集章 (${collectedStamps.size}/4)：${msg}`, false);
+                }
+            }
+        }
+
+        function openGrandPrizeModal() {
+            playSoundEffect('switch');
+            launchPopConfetti();
+            const modal = document.getElementById('grand-prize-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            const video = document.getElementById('manifesto-video');
+            if (video) {
+                video.currentTime = 0;
+                video.play().catch(() => {});
+            }
+        }
+
+        function closeGrandPrizeModal() {
+            playSoundEffect('switch');
+            const modal = document.getElementById('grand-prize-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const video = document.getElementById('manifesto-video');
+            if (video) video.pause();
+        }
+
+        function launchPopConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.classList.remove('hidden');
+
+            const colors = ['#FF491F', '#1E3BFF', '#D9FF00', '#FF70D9', '#00D09C', '#111111'];
+            const particles = Array.from({ length: 80 }, () => ({
+                x: canvas.width / 2 + (Math.random() - 0.5) * 200,
+                y: canvas.height * 0.55,
+                vx: (Math.random() - 0.5) * 22,
+                vy: -Math.random() * 18 - 6,
+                size: Math.random() * 12 + 8,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                rot: Math.random() * Math.PI * 2,
+                vRot: (Math.random() - 0.5) * 0.25,
+                shape: Math.random() > 0.5 ? 'rect' : 'circle'
+            }));
+
+            let frame = 0;
+            function renderConfetti() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                let active = false;
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.vy += 0.45;
+                    p.rot += p.vRot;
+                    if (p.y < canvas.height + 40) active = true;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.rot);
+                    ctx.fillStyle = p.color;
+                    ctx.strokeStyle = '#111111';
+                    ctx.lineWidth = 2;
+                    if (p.shape === 'rect') {
+                        ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+                        ctx.strokeRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7);
+                    } else {
+                        ctx.beginPath();
+                        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+                });
+                frame++;
+                if (active && frame < 180) {
+                    requestAnimationFrame(renderConfetti);
+                } else {
+                    canvas.classList.add('hidden');
+                }
+            }
+            renderConfetti();
+        }
+
+        let toastTimer = null;
+        function showPopToast(text, showActionBtn = false) {
+            const toast = document.getElementById('pop-toast');
+            const actionBtn = document.getElementById('pop-toast-action');
+            document.getElementById('pop-toast-text').innerText = text;
+
+            if (showActionBtn) {
+                actionBtn.classList.remove('hidden');
+            } else {
+                actionBtn.classList.add('hidden');
+            }
+
+            toast.classList.remove('hidden');
+            toast.classList.add('flex');
+
+            if (toastTimer) clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('flex');
+            }, showActionBtn ? 6000 : 3000);
+        }
+
+        /* ==========================================
+           00. HERO 封面点击生成涂鸦 & 切换「工作/生活」照片
+           ========================================== */
+        function openLightbox(src, alt) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightbox-img');
+            img.src = src;
+            img.alt = alt || '';
+            lb.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            playSoundEffect('switch');
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeLightbox();
+        });
+
+        const heroPhotoModes = [
+            {
+                pill: 'ON // WORK MODE',
+                bg: 'bg-pop-blue',
+                img: 'assets/hero/work.jpg',
+                caption: '👩‍💻 工作状态 // 拆解痛点，让想法跑通闭环',
+                tag: 'BUILDER',
+                tagColor: 'bg-pop-blue text-white'
+            },
+            {
+                pill: 'OFF // LIFE MODE',
+                bg: 'bg-pop-orange',
+                img: 'assets/hero/life.jpg',
+                caption: '🧗‍♀️ 生活状态 // 攀岩、打鼓、户外探索',
+                tag: 'EXPLORER',
+                tagColor: 'bg-pop-orange text-white'
+            }
+        ];
+
+        function toggleHeroPhotoMode() {
+            currentVibe = (currentVibe + 1) % heroPhotoModes.length;
+            playSoundEffect('switch');
+            const m = heroPhotoModes[currentVibe];
+            document.getElementById('hero-mode-pill').innerText = m.pill;
+            document.getElementById('hero-card-bg').className = `absolute inset-0 ${m.bg} brutal-border-thick rounded-[2rem] rotate-6 translate-x-3 translate-y-3 transition-colors duration-300`;
+            document.getElementById('hero-main-img').src = m.img;
+            document.getElementById('hero-img-caption').innerText = m.caption;
+            const tagEl = document.getElementById('hero-img-tag');
+            tagEl.innerText = m.tag;
+            tagEl.className = `${m.tagColor} text-[10px] font-bold px-2 py-0.5 rounded brutal-border shrink-0`;
+        }
+
+        const popEmojis = ['★', '⚡', '✦', '🎮', '🎨', 'COOL!', 'IDEA'];
+        const popBgColors = ['#FF491F', '#D9FF00', '#1E3BFF', '#FF70D9', '#00D09C'];
+        function spawnClickSticker(e) {
+            playSoundEffect('bubble');
+            const layer = document.getElementById('click-canvas-layer');
+            const badge = document.createElement('div');
+            const rect = e.currentTarget.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const rot = Math.floor(Math.random() * 40 - 20);
+            const color = popBgColors[Math.floor(Math.random() * popBgColors.length)];
+            const text = popEmojis[Math.floor(Math.random() * popEmojis.length)];
+
+            badge.style.left = `${x}px`;
+            badge.style.top = `${y}px`;
+            badge.style.backgroundColor = color;
+            badge.style.transform = `translate(-50%, -50%) rotate(${rot}deg)`;
+            badge.className = 'absolute px-3 py-1 rounded-full brutal-border font-display font-extrabold text-sm text-ink shadow-md transition-all duration-500';
+            badge.innerText = text;
+
+            layer.appendChild(badge);
+            if (layer.children.length > 15) layer.removeChild(layer.firstChild);
+        }
+
+        /* ==========================================
+           01. 第二屏：能力雷达与经历时序联动
+           6轴顺序：[AI Agent, 产品架构, 游戏策划, 数据分析, 视觉设计, 空间思维]
+           ========================================== */
+        const fullOverviewRadar = {
+            badge: 'OVERVIEW // 综合能力',
+            title: '跨学科综合能力视图',
+            stats: [92, 90, 86, 90, 90, 92],
+            fill: 'rgba(255, 73, 31, 0.72)',
+            buff: '融合建筑学审美与 AI 实践，在产品构建、游戏策划与视觉设计间灵活切换。'
+        };
+
+        const timelineQuests = [
+            {
+                badge: '2026 // TENCENT',
+                title: '腾讯文档 · AI 产品经理',
+                stats: [95, 94, 78, 92, 88, 82],
+                fill: 'rgba(255, 73, 31, 0.75)',
+                buff: '面向多人多 Agent 协作设计 AI 原生文档交互机制，参与 Doc Benchmark 评测体系与 AI 数据看板建设。'
+            },
+            {
+                badge: '2025 - 2026 // ROBOTICS',
+                title: '浩海星空机器人 · 产品经理实习',
+                stats: [88, 95, 80, 85, 82, 88],
+                fill: 'rgba(0, 208, 156, 0.75)',
+                buff: '聚焦双职工家庭 2-8 岁儿童陪伴场景，设计「机器人子体 + NAS 母体 + APP 中枢」一体化架构；主导具身智能数据采集平台 0→1 搭建，并独立搭建资讯推送系统，累计推送近 4000 条。'
+            },
+            {
+                badge: '2025 - 2026 // PROJECTS',
+                title: '独立游戏与 AI 应用赛事',
+                stats: [92, 88, 95, 80, 88, 86],
+                fill: 'rgba(255, 112, 217, 0.78)',
+                buff: '独立开发《钢丝行者》获网易雷火高校游戏大赛二等奖，《时光织语》入围美团 NoCode 挑战赛决赛；《字灵》获腾讯游戏星跃实战营优秀学员，《立意教练》获腾讯产品经理营优秀学员。'
+            },
+            {
+                badge: '2024 - 2027 // SJTU',
+                title: '上海交通大学 · 建筑学硕士',
+                stats: [80, 84, 82, 80, 95, 96],
+                fill: 'rgba(217, 255, 0, 0.78)',
+                buff: '系统训练需求转译、空间叙事与团队协作，负责宁波慈城《年糕家族》IP 形象与衍生品设计（政府采纳），并完成多项校园文创。'
+            }
+        ];
+
+        function updateRadarPolygon(config) {
+            const cx = 160, cy = 145, maxR = 110;
+            const angles = [-90, -30, 30, 90, 150, 210];
+            const pts = config.stats.map((val, i) => {
+                const r = (val / 100) * maxR;
+                const rad = (angles[i] * Math.PI) / 180;
+                const x = (cx + r * Math.cos(rad)).toFixed(1);
+                const y = (cy + r * Math.sin(rad)).toFixed(1);
+                const dot = document.getElementById(`radar-dot-${i}`);
+                if (dot) {
+                    dot.setAttribute('cx', x);
+                    dot.setAttribute('cy', y);
+                }
+                return `${x},${y}`;
+            });
+
+            const poly = document.getElementById('radar-polygon');
+            poly.setAttribute('points', pts.join(' '));
+            poly.setAttribute('fill', config.fill);
+
+            document.getElementById('radar-role-badge').innerText = config.badge;
+            document.getElementById('radar-role-title').innerText = config.title;
+            document.getElementById('radar-buff-text').innerText = config.buff;
+        }
+
+        function resetRadarToFull() {
+            playSoundEffect('switch');
+            updateRadarPolygon(fullOverviewRadar);
+            [0, 1, 2, 3].forEach(i => {
+                const card = document.getElementById(`quest-card-${i}`);
+                card.className = 'quest-card cursor-pointer relative bg-white text-ink hover:bg-cream brutal-border-thick brutal-shadow rounded-2xl p-5 transition-all';
+            });
+        }
+
+        function selectTimelineQuest(idx) {
+            playSoundEffect('switch');
+            unlockStamp(2, '查看了经历时序与能力雷达！');
+            updateRadarPolygon(timelineQuests[idx]);
+
+            [0, 1, 2, 3].forEach(i => {
+                const card = document.getElementById(`quest-card-${i}`);
+                if (i === idx) {
+                    card.className = 'quest-card cursor-pointer relative bg-pop-lime text-ink brutal-border-thick brutal-shadow-lg rounded-2xl p-5 transition-all -translate-y-0.5';
+                } else {
+                    card.className = 'quest-card cursor-pointer relative bg-white text-ink hover:bg-cream brutal-border-thick brutal-shadow rounded-2xl p-5 transition-all';
+                }
+            });
+        }
+
+        /* ==========================================
+           02. 第三屏：三个方向各三个作品放映
+           ========================================== */
+        const archiveData = {
+            product: {
+                name: '产品构建',
+                accent: 'bg-pop-lime text-ink',
+                items: [
+                    {
+                        code: '01',
+                        icon: 'fa-images',
+                        title: '《拾帧》生活碎片智能排版',
+                        tags: ['AI 手账编排', '2026.11 · 完善中'],
+                        finalImg: 'assets/works/shizhen-final.jpg',
+                        wireImg: 'assets/works/shizhen-behind.jpg',
+                        behindTag: '产品定义',
+                        behindTitle: '零负担碎片输入 + AI 手账流式编排',
+                        behindDesc: '面向渴望留存日常、却困于社交绩效压力与整理成本的都市记录者，让随手记下的图文不再沦为数字坟场。',
+                        metric: '2026.11 · 完善中',
+                        summary: 'V1.0《时光织语》入围美团 NoCode 挑战赛决赛，AI 自动生成手账版式。',
+                        link: 'https://framenote-sz.netlify.app/',
+                        linkText: '体验作品'
+                    },
+                    {
+                        code: '02',
+                        icon: 'fa-utensils',
+                        title: '《食刻选择》智能点餐决策助手',
+                        tags: ['AI 决策助手', '课程设计'],
+                        finalImg: 'assets/works/shike-final.jpg',
+                        wireImg: 'assets/works/shike-behind.jpg',
+                        finalPos: 'center 35%',
+                        behindTag: '需求与框架',
+                        behindTitle: '从「点餐纠结」到点餐推荐智能体',
+                        behindDesc: '应用 AI 辅助开展用户调研与问卷访谈，完成数据整理与分析，识别目标用户画像与功能优先级；同步用 Figma 完成 APP 基础 UI 设计。',
+                        metric: '课程设计 · 智能体推进中',
+                        summary: '从需求挖掘到核心框架搭建，现阶段推进点餐推荐智能体落地。',
+                        link: 'https://my.feishu.cn/docx/EMZydTrp6oqurBxKYmRcJVTAnPb',
+                        linkText: '查看项目记录'
+                    },
+                    {
+                        code: '03',
+                        icon: 'fa-bolt',
+                        title: 'AI 资讯自动化推送系统',
+                        tags: ['Coze + n8n', '累计 4000+ 条'],
+                        finalImg: 'assets/works/newsflow-final.jpg',
+                        wireImg: 'assets/works/newsflow-flow.jpg',
+                        finalPos: 'center 25%',
+                        behindTag: '管线架构',
+                        behindTitle: 'Coze 编排 × n8n 多源爬取 × 飞书推送',
+                        behindDesc: '基于 Coze 编排全流程工作流，结合 n8n 实现多源爬取，对接飞书完成结构化管理与企业微信群自动推送。',
+                        metric: '累计推送近 4000 条',
+                        summary: '替代人工搜集与筛选，为团队提供每日 AI 动态参考。'
+                    }
+                ]
+            },
+            game: {
+                name: '游戏策划',
+                accent: 'bg-pop-orange text-white',
+                items: [
+                    {
+                        code: '01',
+                        icon: 'fa-person-walking',
+                        title: '《钢丝行者》物理平衡挑战',
+                        tags: ['网易雷火二等奖', 'AI 全流程开发'],
+                        video: 'assets/video/skywire-promo.mp4',
+                        behindTag: '核心玩法',
+                        behindTitle: '三重操控叠加下的策略取舍',
+                        behindDesc: '左右键对抗风力保持平衡，Z/X 实时控制平衡杆伸缩，C 键发射光束击退机械鸟；长杆稳定且易取道具但风险高，短杆灵活却更怕风。',
+                        metric: '网易雷火高校游戏大赛二等奖',
+                        summary: 'Cursor 生成代码与音效，Gemini Nano Banana 出美术，Suno 生成音乐，AI 全流程辅助开发。',
+                        link: 'https://skywire-walker.netlify.app/',
+                        linkText: '体验（电脑端）'
+                    },
+                    {
+                        code: '02',
+                        icon: 'fa-wave-square',
+                        title: '《霓虹回声》2D 肉鸽射击',
+                        tags: ['2 天制作', '卡牌构筑'],
+                        video: 'assets/video/neonecho-promo.mp4',
+                        behindTag: '核心机制',
+                        behindTitle: '声纳是眼睛，也是暴露自己的信号',
+                        behindDesc: '声纳是发现远处敌人与补给箱的唯一手段，但发射即向全场暴露位置；射击与声纳共享同一套能量，玩家须在探测与火力之间取舍。',
+                        metric: '2 天独立完成可玩 Demo',
+                        summary: '7 种敌人与 5 个 Boss 逐级登场，14 张芯片卡构建武器、声纳、生存等流派。',
+                        link: 'https://neonecho.netlify.app/',
+                        linkText: '体验（电脑端）'
+                    },
+                    {
+                        code: '03',
+                        icon: 'fa-language',
+                        title: '《字灵》AI 原生文字沙盒',
+                        tags: ['字化万物', '沙盒生存'],
+                        finalImg: 'assets/works/ziling-final.jpg',
+                        wireImg: 'assets/works/ziling-final.jpg',
+                        behindTag: '玩法设定',
+                        behindTitle: '把汉字变成可采集、可融合的世界单位',
+                        behindDesc: '摒弃拼字与笔画拆解，将汉字直接转化为可采集、可放置、可融合、可装备的世界单位；玩家扮演最基础的「我」，在东方文字生态中采字、炼字、建造与探索。',
+                        metric: '腾讯游戏星跃实战营优秀学员',
+                        summary: '以文字意境构建自然生态，让汉字本身成为玩法与叙事的载体。',
+                        link: 'https://gemini.google.com/share/c4246d12961e',
+                        linkText: '体验 Demo'
+                    }
+                ]
+            },
+            visual: {
+                name: '视觉设计',
+                accent: 'bg-pop-pink text-ink',
+                items: [
+                    {
+                        code: '01',
+                        icon: 'fa-shirt',
+                        title: '腾讯文化衫《Create() Together》',
+                        tags: ['28th 司庆全员款', '图形设计'],
+                        finalImg: 'assets/works/tencent-tee-duo.jpg',
+                        finalZoom: 'assets/works/tencent-tee-present.jpg',
+                        wireImg: 'assets/works/tencent-tee-flat.jpg',
+                        finalPos: 'center 60%',
+                        behindTag: '视觉创意',
+                        behindTitle: '把「在一起」写进无限循环',
+                        behindDesc: '正面 while True: create(together=True) 把共创设为默认值，背面代码将「用户为本、科技向善」写进运行逻辑；价值观动物被绘制成 AI 时代的工作形态。',
+                        metric: '黑色款入选 28th 司庆全员款',
+                        summary: 'assert together is True 与 return ✦ 共同指向：携手同行，创造才会发光。'
+                    },
+                    {
+                        code: '02',
+                        icon: 'fa-dragon',
+                        title: '《年糕家族》慈城文化 IP 与衍生品',
+                        tags: ['“知行杯”特等奖', '政府采纳'],
+                        finalImg: 'assets/works/cicheng-final.jpg',
+                        wireImg: 'assets/works/cicheng-final.jpg',
+                        finalPos: 'center 45%',
+                        behindTag: '提取与转化',
+                        behindTitle: '古县城文化基因的数智转译',
+                        behindDesc: '实地调研挖掘古县城文化基因，负责年糕家族 IP 形象设计，通过 AI 辅助、PS 细化产出一系列 IP 衍生品。',
+                        metric: '“知行杯”特等奖 · 政府采纳',
+                        summary: '团队项目（指导老师王禹），本人负责 IP 形象与衍生品设计，成果被当地政府采纳并推进深化合作。'
+                    },
+                    {
+                        code: '03',
+                        icon: 'fa-clapperboard',
+                        title: '上海交大出海课程 AIGC 宣传片',
+                        tags: ['AIGC 影像', '脚本 → 成片'],
+                        video: 'assets/video/sjtu-study-abroad.mp4',
+                        behindTag: '制作链路',
+                        behindTitle: '从脚本到成片的 AI 全链路',
+                        behindDesc: '独立完成脚本撰写，AI 生成画面、音乐与旁白，最后用剪映完成剪辑与节奏把控。',
+                        metric: '2025.12 · 独立制作',
+                        summary: '用 AIGC 压缩传统宣传片的制作周期与成本，把课程叙事做成可传播的影像。'
+                    }
+                ]
+            }
+        };
+
+        let currentTrack = 'product';
+        let currentScreeningIndex = 0;
+
+        function switchWorkTrack(trackKey) {
+            playSoundEffect('switch');
+            unlockStamp(3, '切换了作品方向！');
+            currentTrack = trackKey;
+            currentScreeningIndex = 0;
+
+            const tabStyles = {
+                product: 'bg-pop-lime text-ink',
+                game: 'bg-pop-orange text-white',
+                visual: 'bg-pop-pink text-ink'
+            };
+
+            ['product', 'game', 'visual'].forEach(k => {
+                const btn = document.getElementById(`track-tab-${k}`);
+                if (k === trackKey) {
+                    btn.className = `px-5 py-2.5 rounded-xl font-display font-extrabold text-sm sm:text-base transition-all ${tabStyles[k]} brutal-border flex items-center gap-2 -translate-y-0.5`;
+                } else {
+                    btn.className = 'px-5 py-2.5 rounded-xl font-display font-extrabold text-sm sm:text-base transition-all bg-white text-ink hover:bg-cream flex items-center gap-2';
+                }
+            });
+
+            const trackObj = archiveData[trackKey];
+            const badgeEl = document.getElementById('screen-track-badge');
+            badgeEl.innerText = trackObj.name;
+            badgeEl.className = `${trackObj.accent} font-mono font-extrabold text-xs px-3 py-1 rounded-full brutal-border`;
+
+            renderCartridgeList();
+            loadScreeningItem(0);
+        }
+
+        function renderCartridgeList() {
+            const listEl = document.getElementById('cartridge-list');
+            const trackObj = archiveData[currentTrack];
+            listEl.innerHTML = trackObj.items.map((item, idx) => {
+                const isActive = idx === currentScreeningIndex;
+                const cardStyle = isActive
+                    ? `${trackObj.accent} brutal-shadow-lg -translate-y-1`
+                    : 'bg-white text-ink hover:bg-cream brutal-shadow';
+                const tagStyle = isActive
+                    ? 'bg-ink/20 border-current'
+                    : 'bg-cream border-ink/20 text-ink/80';
+
+                return `
+                    <div onclick="loadScreeningItem(${idx})" class="cursor-pointer ${cardStyle} brutal-border-thick rounded-3xl p-5 transition-all flex flex-col justify-between flex-1">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-mono font-extrabold text-xs bg-ink text-pop-lime px-3 py-0.5 rounded-full">NO.${item.code}</span>
+                            <i class="fa-solid ${item.icon} text-lg"></i>
+                        </div>
+                        <h3 class="font-display font-extrabold text-lg sm:text-xl leading-snug">${item.title}</h3>
+                        <div class="flex flex-wrap gap-1.5 mt-3">
+                            ${item.tags.map(t => `<span class="text-[11px] font-bold px-2.5 py-0.5 rounded-lg border ${tagStyle}"># ${t}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function loadScreeningItem(idx) {
+            if (idx !== currentScreeningIndex) {
+                playSoundEffect('switch');
+                unlockStamp(3, '切换了放映作品！');
+            }
+            currentScreeningIndex = idx;
+            const trackObj = archiveData[currentTrack];
+            const item = trackObj.items[idx];
+
+            document.getElementById('screen-title').innerText = item.title;
+            document.getElementById('screen-metric').innerText = item.metric;
+            document.getElementById('screen-summary').innerText = item.summary;
+
+            const videoWrap = document.getElementById('video-wrap');
+            const compareWrap = document.getElementById('compare-wrap');
+            const videoEl = document.getElementById('screen-video');
+            const videoEmpty = document.getElementById('video-empty');
+            const hintEl = document.getElementById('screen-mode-hint');
+
+            if (item.video) {
+                videoWrap.classList.remove('hidden');
+                compareWrap.classList.add('hidden');
+                hintEl.innerText = '▶ 作品影像';
+
+                videoEmpty.classList.add('hidden');
+                videoEl.classList.remove('hidden');
+                videoEl.poster = item.videoPoster || '';
+                if (videoEl.dataset.src !== item.video) {
+                    videoEl.dataset.src = item.video;
+                    videoEl.onerror = () => {
+                        videoEl.classList.add('hidden');
+                        videoEmpty.classList.remove('hidden');
+                    };
+                    videoEl.src = item.video;
+                }
+                videoEl.play().catch(() => {});
+            } else if (item.finalImg) {
+                compareWrap.classList.remove('hidden');
+                videoWrap.classList.add('hidden');
+                hintEl.innerText = '⇄ 拖动滑块看设计思路';
+                videoEl.pause();
+                videoEl.removeAttribute('src');
+                delete videoEl.dataset.src;
+                videoEl.poster = '';
+                videoEl.load();
+
+                compareWrap.classList.toggle('bg-white', item.fit === 'contain');
+                compareWrap.classList.toggle('bg-ink', item.fit !== 'contain');
+
+                const finalEl = document.getElementById('project-img-final');
+                finalEl.className = `absolute inset-0 w-full h-full ${item.fit === 'contain' ? 'object-contain' : 'object-cover'}`;
+                finalEl.style.objectPosition = item.finalPos || 'center';
+                finalEl.onerror = () => {
+                    finalEl.onerror = null;
+                    finalEl.src = `https://placehold.co/1400x875/1E3BFF/FFFFFF?text=${encodeURIComponent(item.code)}`;
+                };
+                finalEl.src = item.finalImg;
+                finalEl.dataset.zoom = item.finalZoom || item.finalImg;
+
+                const wireEl = document.getElementById('project-img-wireframe');
+                wireEl.style.objectPosition = item.wirePos || 'center';
+                wireEl.src = item.wireImg || item.finalImg;
+
+                document.getElementById('project-behind-tag').innerText = item.behindTag;
+                document.getElementById('project-behind-title').innerText = item.behindTitle;
+                document.getElementById('project-behind-desc').innerText = item.behindDesc;
+            } else {
+                videoWrap.classList.remove('hidden');
+                compareWrap.classList.add('hidden');
+                hintEl.innerText = '◌ 素材待补充';
+                videoEl.classList.add('hidden');
+                videoEmpty.classList.remove('hidden');
+            }
+
+            const linkBtn = document.getElementById('screen-link-btn');
+            if (item.link) {
+                linkBtn.classList.remove('hidden');
+                linkBtn.href = item.link;
+                document.getElementById('screen-link-text').innerText = item.linkText;
+            } else {
+                linkBtn.classList.add('hidden');
+            }
+
+            renderCartridgeList();
+        }
+
+        function updateComparisonSlider(val) {
+            document.getElementById('slider-overlay').style.clipPath = `inset(0 ${100 - val}% 0 0)`;
+            document.getElementById('slider-line').style.left = `${val}%`;
+        }
+
+        /* 拖动改变分割线；原地单击则放大最终成果图 */
+        (function initCompareGesture() {
+            const wrap = document.getElementById('compare-wrap');
+            const hit = document.getElementById('compare-hit');
+            let dragging = false, startX = 0, moved = 0;
+
+            const setFromX = (clientX) => {
+                const r = wrap.getBoundingClientRect();
+                const pct = Math.min(100, Math.max(0, ((clientX - r.left) / r.width) * 100));
+                updateComparisonSlider(pct);
+            };
+
+            hit.addEventListener('pointerdown', (e) => {
+                dragging = true;
+                startX = e.clientX;
+                moved = 0;
+                hit.setPointerCapture(e.pointerId);
+            });
+
+            hit.addEventListener('pointermove', (e) => {
+                if (!dragging) return;
+                moved = Math.max(moved, Math.abs(e.clientX - startX));
+                setFromX(e.clientX);
+            });
+
+            hit.addEventListener('pointerup', () => {
+                if (!dragging) return;
+                dragging = false;
+                if (moved < 6) {
+                    const img = document.getElementById('project-img-final');
+                    openLightbox(img.dataset.zoom || img.src, img.alt);
+                }
+            });
+
+            hit.addEventListener('pointercancel', () => { dragging = false; });
+        })();
+
+        /* ==========================================
+           03. 真实撕开贴纸交互与重置
+           ========================================== */
+        function peelSticker(stageEl) {
+            playSoundEffect('peel');
+            stageEl.classList.toggle('is-peeled');
+            unlockStamp(4, '撕开了B面高能量贴纸！');
+        }
+
+        function resetAllStickers() {
+            playSoundEffect('peel');
+            document.querySelectorAll('.sticker-stage').forEach(el => {
+                el.classList.remove('is-peeled');
+            });
+        }
+
+        function shuffleStickers() {
+            playSoundEffect('switch');
+            unlockStamp(4, '摇动了贴纸游乐场！');
+            const cards = document.querySelectorAll('.sticker-stage');
+            cards.forEach(c => {
+                const r = Math.floor(Math.random() * 12 - 6);
+                c.style.transform = `rotate(${r}deg)`;
+            });
+        }
+
+        /* ==========================================
+           04. 终极盖章录用动效
+           ========================================== */
+        function slamOfferStamp(email) {
+            playSoundEffect('stamp');
+            const stamp = document.getElementById('hired-stamp-mark');
+            stamp.classList.remove('hidden', 'stamp-anim');
+            void stamp.offsetWidth;
+            stamp.classList.add('stamp-anim');
+
+            const temp = document.createElement('textarea');
+            temp.value = email;
+            document.body.appendChild(temp);
+            temp.select();
+            document.execCommand('copy');
+            document.body.removeChild(temp);
+
+            document.getElementById('stamp-btn-text').innerText = `✔ 已盖章！邮箱已复制 (${email})`;
+            showPopToast('🔥 盖章成功！邮箱已复制到剪贴板，期待与你共事！');
+        }
+
+        // 页面加载初始化
+        window.onload = function () {
+            updateRadarPolygon(timelineQuests[0]);
+            renderCartridgeList();
+            loadScreeningItem(0);
+        };
+    </script>
+</body>
+</html>
